@@ -24,12 +24,12 @@ import org.junit.Test;
  */
 public class AppComponentTest {
 
-    private AppComponent component;
+    private CaptivePortal component;
 
     @Before
     public void setUp() {
-        component = new AppComponent();
-        component.activate();
+        component = new CaptivePortal();
+        // component.activate();
 
     }
 

@@ -28,9 +28,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <onos.version>1.10.0</onos.version>
-        <onos.app.name>org.foo.app</onos.app.name>
-        <onos.app.title>Foo App</onos.app.title>
-        <onos.app.origin>Foo, Inc.</onos.app.origin>
+        <onos.app.name>org.CaptivePortal.app</onos.app.name>
+        <onos.app.title>CaptivePortal App</onos.app.title>
+        <onos.app.origin>ChenPo, Inc.</onos.app.origin>
         <onos.app.category>default</onos.app.category>
         <onos.app.url>http://onosproject.org</onos.app.url>
         <onos.app.readme>ONOS OSGi bundle archetype.</onos.app.readme>
@@ -42,7 +42,11 @@
             <artifactId>onos-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20090211</version>
+        </dependency>
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onlab-osgi</artifactId>
