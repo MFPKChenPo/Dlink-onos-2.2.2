@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return 'hello world'
+    return redirect(url_for('login'))
 
 
 @app.route('/login', methods=['GET','POST'])
@@ -32,4 +32,4 @@ def fail():
 
 if __name__ == '__main__':
     app.debug = True
-    app.run(host="192.168.44.128",port=5001)
+    app.run(host="192.168.44.198",port=5001)

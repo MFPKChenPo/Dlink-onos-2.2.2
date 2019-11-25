@@ -14,7 +14,9 @@ public class Authentication {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	private String portalMac = "ea:e9:78:fb:fd:2d";
+	// private String portalMac = "ea:e9:78:fb:fd:2d";
+	private String portalMac = "f6:42:0f:83:51:de";
+
 	private String gatewayMac = "00:50:56:fc:6e:36";
 
 	private String src_mac;

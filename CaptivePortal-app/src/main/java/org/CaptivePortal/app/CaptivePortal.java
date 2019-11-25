@@ -153,11 +153,15 @@ public class CaptivePortal {
 
 	private HashMap<PortNumber, MacAddress> tempMac;
 	private HashMap<PortNumber, Ip4Address> tempIp;
+	private HashMap<PortNumber, PortNumber> tempPort;
 	private HashMap<MacAddress, HashMap<PortNumber, MacAddress>> macMapping = new HashMap<MacAddress, HashMap<PortNumber, MacAddress>>();
 	private HashMap<MacAddress, HashMap<PortNumber, Ip4Address>> ipMapping = new HashMap<MacAddress, HashMap<PortNumber, Ip4Address>>();
+	private HashMap<MacAddress, HashMap<PortNumber, PortNumber>> portMapping = new HashMap<MacAddress, HashMap<PortNumber, PortNumber>>();
 
-	private String portalIp = "192.168.44.200";
-	private String portalMac = "ea:e9:78:fb:fd:2d";
+	private String portalIp = "192.168.44.198";
+	// private String portalMac = "ea:e9:78:fb:fd:2d";
+	private String portalMac = "f6:42:0f:83:51:de";
+
 	private String toPortalSwitch = "of:000078321bdf7000";
 
 	private Authentication auth;
@@ -368,10 +372,12 @@ public class CaptivePortal {
 
 		MacAddress old_src_mac = null;
 		Ip4Address old_src_ip = null;
+		PortNumber old_src_port = null;
 
 		if (macMapping.get(dst_mac) != null && ipMapping.get(dst_mac) != null) {
 			old_src_mac = macMapping.get(dst_mac).get(dst_port);
 			old_src_ip = ipMapping.get(dst_mac).get(dst_port);
+			old_src_port = portMapping.get(dst_mac).get(dst_port);
 		}
 
 		HostId dstId = HostId.hostId(ethPkt.getDestinationMAC());
@@ -401,6 +407,7 @@ public class CaptivePortal {
 			if (src_ip.toString() != old_src_ip.toString())
 				if (old_src_mac != null && old_src_ip != null) {
 					ipv4Packet.setSourceAddress(old_src_ip.toString());
+					tcpPacket.setSourcePort(Integer.valueOf(old_src_port.toString()));
 					tcpPacket.resetChecksum();
 					tcpPacket.serialize();
 					ipv4Packet.resetChecksum();
@@ -425,6 +432,7 @@ public class CaptivePortal {
 		MacAddress dst_mac = ethPkt.getDestinationMAC();
 		Ip4Address dst_ip = Ip4Address.valueOf(ipv4Packet.getDestinationAddress());
 		PortNumber src_port = PortNumber.portNumber(Integer.toString(tcpPacket.getSourcePort()));
+		PortNumber dst_port = PortNumber.portNumber(Integer.toString(tcpPacket.getDestinationPort()));
 		DeviceId in_sw = InPkt.receivedFrom().deviceId();
 		byte ipv4Protocol = ipv4Packet.getProtocol();
 
@@ -442,6 +450,13 @@ public class CaptivePortal {
 		} else
 			ipMapping.get(src_mac).put(src_port, dst_ip);
 
+		if (portMapping.get(src_mac) == null) {
+			tempPort = new HashMap<>();
+			tempPort.put(src_port, dst_port);
+			portMapping.put(src_mac, tempPort);
+		} else
+		portMapping.get(src_mac).put(src_port, dst_port);
+
 		ethPkt.setDestinationMACAddress(portalMac);
 		ipv4Packet.setDestinationAddress(portalIp);
 		tcpPacket.setDestinationPort(5001);
@@ -453,9 +468,7 @@ public class CaptivePortal {
 
 		HostId dstId = HostId.hostId(ethPkt.getDestinationMAC()); // Portal MAC
 		Host dst = hostService.getHost(dstId);
-		log.info(dstId.toString());
 		TrafficTreatment treatment = null;
-		// log.info(dst.toString());
 
 		if (dst == null) {
 			log.info("dst is null");
@@ -476,7 +489,7 @@ public class CaptivePortal {
 		}
 
 		OutboundPacket OutPkt = new DefaultOutboundPacket(in_sw, treatment, ByteBuffer.wrap(ethPkt.serialize()));
-		// log.info(treatment.toString());
+		log.info(treatment.toString());
 		packetService.emit(OutPkt);
 	}
 
