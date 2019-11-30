@@ -17,7 +17,8 @@ public class Authentication {
 	// private String portalMac = "ea:e9:78:fb:fd:2d";
 	private String portalMac = "f6:42:0f:83:51:de";
 
-	private String gatewayMac = "00:50:56:fc:6e:36";
+	// private String gatewayMac = "00:50:56:fc:6e:36";
+	private String gatewayMac = "ea:e9:78:fb:fd:00";
 
 	private String src_mac;
 	private String dst_mac;
@@ -119,8 +120,42 @@ public class Authentication {
 		}
 
 		// Check whether the host is authenticated or not
-		boolean src_enable = isMacPass(src_mac);
-
+		// boolean src_enable = isMacPass(src_mac);
+		boolean src_enable = false;
+		Process process;
+		try {
+			log.info(src_ip);
+			String line = "curl -X POST http://localhost:8181/RadiusAuthentication/UserCredential/getUser -u onos:rocks -d ip="
+			+ src_ip ;
+			log.info(line);
+			process = Runtime.getRuntime().exec(line);
+			int returnVal=0;
+			try{
+				returnVal = process.waitFor();
+			}catch(InterruptedException e){
+				log.info("interrupted exception for exec curl");
+			};
+			log.info(Integer.toString(returnVal));
+			line = "";
+			BufferedReader p_in = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			line = p_in.readLine();
+			log.info("line : "+line);
+			if (line != null) {
+				if (line.equals("true"))
+				{
+					log.info("getUser success!!");
+					src_enable = true;
+				}
+				else
+				{
+					log.info("getUser failed!!");
+					src_enable = false;
+				}
+			}
+		} catch (IOException e) {
+			log.info("in Authentication getUser IOException");
+		}
+		;
 		// Get User_IDs of source and destination hosts
 		src_user = macToUser(src_mac);
 		dst_user = macToUser(dst_mac);
@@ -137,19 +172,20 @@ public class Authentication {
 				// check ACL and pass the packet if it is not blocked
 				// Update expiration time in Registered_MAC table
 				// if (!AclToGroup(macToGroup()))
+				log.info("user authenticated!!!!!!!!!!!!!!!!!!!!&goto the internet");
 				result = "Pass";
 				// updateExpirationTime();
 			} else if (!src_mac.equalsIgnoreCase(portalMac) && !dst_mac.equalsIgnoreCase(portalMac)) {
 				// If the packet is from unauthenticated host and destination is not portal,
 				// redirect it to portal and update IP_MAC table
 				if (dst_port.equals("80") || dst_port.equals("443") || dst_port.equals("5001")) {
-					updateIp();
+					// updateIp();
 					return "RedirectToPortal";
 				}
 			}
 		}
 		// Update IP_MAC table and record flow information
-		updateIp();
+		// updateIp();
 		// insertAssociation();
 		return result;
 	}

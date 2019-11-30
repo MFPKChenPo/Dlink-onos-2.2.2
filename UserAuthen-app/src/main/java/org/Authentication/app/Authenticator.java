@@ -83,6 +83,7 @@ public class Authenticator {
         log.info("Packet aggter iw was sent\n" + auth_ar + "\n");
         log.info("Response\n" + response.getPacketTypeName() + "\n");
         rc.close();
+
         return response.getPacketTypeName();
     }
 
