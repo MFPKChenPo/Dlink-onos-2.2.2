@@ -23,14 +23,14 @@ def login():
             is_insert = f.read()
             if is_insert == '0':
                 print("insert success")
-                return redirect('http://www.coolpc.com.tw')
+                return redirect('https://www.nctu.edu.tw')
             else:
                 cmdExec = "curl -X POST http://192.168.44.128:8181/RadiusAuthentication/UserCredential/getUser -u onos:rocks -d 'ip="+request.remote_addr+"'"
                 f=os.popen(cmdExec)
                 is_user = f.read()
                 if is_user == 'true':
                     print("get success")
-                    return redirect('http://www.coolpc.com.tw')
+                    return redirect('https://www.nctu.edu.tw')
                 print("insert failed")
                 return redirect('http://192.168.44.198:5001/fail')
         return redirect('http://192.168.44.198:5001/fail')
