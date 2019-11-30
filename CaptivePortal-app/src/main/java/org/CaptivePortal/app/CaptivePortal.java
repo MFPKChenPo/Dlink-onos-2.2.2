@@ -462,7 +462,6 @@ public class CaptivePortal {
 		tcpPacket.setDestinationPort(5001);
 		tcpPacket.resetChecksum();
 		tcpPacket.serialize();
-		// log.info(tcpPacket.toString());
 		ipv4Packet.resetChecksum();
 		ipv4Packet.serialize();
 
@@ -482,7 +481,7 @@ public class CaptivePortal {
 
 					if (path == null) {
 						treatment = DefaultTrafficTreatment.builder().setOutput(PortNumber.FLOOD).build();
-						// log.info("NULL PATH");
+						log.info("NULL PATH");
 					} else
 						treatment = DefaultTrafficTreatment.builder().setOutput(path.src().port()).build();
 				}
@@ -636,8 +635,8 @@ public class CaptivePortal {
 					dst_port = ((UdpPortCriterion) selector.getCriterion(Criterion.Type.UDP_DST)).udpPort().toString();
 				}
 
-				auth.updateBytes(switchId.toString(), in_port, src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port,
-						protocol, bytes);
+				// auth.updateBytes(switchId.toString(), in_port, src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port,
+				// 		protocol, bytes);
 				break;
 			default:
 				break;
