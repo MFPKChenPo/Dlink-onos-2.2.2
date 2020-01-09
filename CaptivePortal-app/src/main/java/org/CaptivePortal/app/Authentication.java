@@ -88,11 +88,11 @@ public class Authentication {
 			}catch(InterruptedException e){
 				log.info("interrupted exception for exec curl");
 			};
-			log.info(Integer.toString(returnVal));
+			// log.info(Integer.toString(returnVal));
 			line = "";
 			BufferedReader p_in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			line = p_in.readLine();
-			log.info("line in Auth. constructor : "+line);
+			// log.info("line in Auth. constructor : "+line);
 			if (line == null) {
 				log.info("line is null in Auth. constructor!!");
 			}
@@ -143,7 +143,7 @@ public class Authentication {
 			log.info(src_ip);
 			String line = "curl -X POST http://localhost:8181/RadiusAuthentication/UserCredential/getUser -u onos:rocks -d ip="
 			+ src_ip ;
-			log.info(line);
+			// log.info(line);
 			process = Runtime.getRuntime().exec(line);
 			int returnVal=0;
 			try{
@@ -151,11 +151,11 @@ public class Authentication {
 			}catch(InterruptedException e){
 				log.info("interrupted exception for exec curl");
 			};
-			log.info(Integer.toString(returnVal));
+			// log.info(Integer.toString(returnVal));
 			line = "";
 			BufferedReader p_in = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			line = p_in.readLine();
-			log.info("line : "+line);
+			// log.info("line : "+line);
 			if (line != null) {
 				if (line.equals("true"))
 				{

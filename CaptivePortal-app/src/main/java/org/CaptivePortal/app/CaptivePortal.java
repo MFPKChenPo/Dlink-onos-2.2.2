@@ -455,7 +455,7 @@ public class CaptivePortal {
 			tempPort.put(src_port, dst_port);
 			portMapping.put(src_mac, tempPort);
 		} else
-		portMapping.get(src_mac).put(src_port, dst_port);
+			portMapping.get(src_mac).put(src_port, dst_port);
 
 		ethPkt.setDestinationMACAddress(portalMac);
 		ipv4Packet.setDestinationAddress(portalIp);
@@ -470,7 +470,7 @@ public class CaptivePortal {
 		TrafficTreatment treatment = null;
 
 		if (dst == null) {
-			log.info("dst is null");
+			log.info("dst is null when redirect to portal, so FLOOD the packet");
 			treatment = DefaultTrafficTreatment.builder().setOutput(PortNumber.FLOOD).build();
 		} else {
 			if (InPkt.receivedFrom().deviceId().equals(dst.location().deviceId()))
@@ -481,7 +481,6 @@ public class CaptivePortal {
 
 					if (path == null) {
 						treatment = DefaultTrafficTreatment.builder().setOutput(PortNumber.FLOOD).build();
-						log.info("NULL PATH");
 					} else
 						treatment = DefaultTrafficTreatment.builder().setOutput(path.src().port()).build();
 				}
@@ -502,7 +501,7 @@ public class CaptivePortal {
 		Set<Path> paths = topologyService.getPaths(topologyService.currentTopology(), InPkt.receivedFrom().deviceId(),
 				dst.location().deviceId());
 		if (paths.isEmpty()) {
-			log.info("PATH NULLLLLLLLLLL");
+			log.info("Path is empty when calculate Path");
 			return null;
 		}
 
@@ -546,6 +545,28 @@ public class CaptivePortal {
 		context.send();
 	}
 
+	private boolean isSpecificLayer4Port(Integer portNum) {
+		/*
+		 * if the TCP/UDP port is for DNS/HTTPS/HTTP then return true
+		 */
+		if (portNum == 53 || portNum == 443 || portNum == 80) {
+			log.info("is DNS/HTTPS/HTTP !! port: " + portNum.toString());
+			return true;
+		} else {
+			log.info("is not DNS/HTTPS/HTTP !! port: " + portNum.toString());
+			return false;
+
+		}
+
+	}
+
+	private boolean isMyLocalAreaNetwork(Ip4Prefix addr) {
+		if (addr.toString().equals("192.168.44.0/24") )
+			return true;
+		log.info("is not my LAN address, the IP is: " + addr.toString());
+		return false;
+	}
+
 	private void installRule(PacketContext context, PortNumber portNumber) {
 		Ethernet inPkt = context.inPacket().parsed();
 		TrafficSelector.Builder selectorBuilder = DefaultTrafficSelector.builder();
@@ -555,9 +576,9 @@ public class CaptivePortal {
 			packetOut(context, portNumber);
 			return;
 		}
-
-		selectorBuilder.matchInPort(context.inPacket().receivedFrom().port()).matchEthSrc(inPkt.getSourceMAC())
-				.matchEthDst(inPkt.getDestinationMAC());
+		selectorBuilder.matchInPort(context.inPacket().receivedFrom().port());
+		// selectorBuilder.matchInPort(context.inPacket().receivedFrom().port()).matchEthSrc(inPkt.getSourceMAC())
+		// .matchEthDst(inPkt.getDestinationMAC());
 
 		if (inPkt.getEtherType() == Ethernet.TYPE_IPV4) {
 			IPv4 ipv4Packet = (IPv4) inPkt.getPayload();
@@ -565,18 +586,35 @@ public class CaptivePortal {
 			Ip4Prefix matchIp4SrcPrefix = Ip4Prefix.valueOf(ipv4Packet.getSourceAddress(), Ip4Prefix.MAX_MASK_LENGTH);
 			Ip4Prefix matchIp4DstPrefix = Ip4Prefix.valueOf(ipv4Packet.getDestinationAddress(),
 					Ip4Prefix.MAX_MASK_LENGTH);
-			selectorBuilder.matchEthType(Ethernet.TYPE_IPV4).matchIPSrc(matchIp4SrcPrefix)
-					.matchIPDst(matchIp4DstPrefix);
+			selectorBuilder.matchEthType(Ethernet.TYPE_IPV4);
+			if (isMyLocalAreaNetwork(Ip4Prefix.valueOf(ipv4Packet.getSourceAddress(), 24)))
+				selectorBuilder.matchIPSrc(matchIp4SrcPrefix);
+			if (isMyLocalAreaNetwork(Ip4Prefix.valueOf(ipv4Packet.getDestinationAddress(),24)))
+				selectorBuilder.matchIPDst(matchIp4DstPrefix);
+				// selectorBuilder.matchEthType(Ethernet.TYPE_IPV4).matchIPSrc(matchIp4SrcPrefix)
+				// 		.matchIPDst(matchIp4DstPrefix);
 
 			if (ipv4Protocol == IPv4.PROTOCOL_TCP) {
 				TCP tcpPacket = (TCP) ipv4Packet.getPayload();
-				selectorBuilder.matchIPProtocol(ipv4Protocol).matchTcpSrc(TpPort.tpPort(tcpPacket.getSourcePort()))
-						.matchTcpDst(TpPort.tpPort(tcpPacket.getDestinationPort()));
+				// selectorBuilder.matchIPProtocol(ipv4Protocol).matchTcpSrc(TpPort.tpPort(tcpPacket.getSourcePort()))
+				// .matchTcpDst(TpPort.tpPort(tcpPacket.getDestinationPort()));
+				selectorBuilder.matchIPProtocol(ipv4Protocol);
+				if (isSpecificLayer4Port(tcpPacket.getSourcePort()))
+					selectorBuilder.matchTcpSrc(TpPort.tpPort(tcpPacket.getSourcePort()));
+				if (isSpecificLayer4Port(tcpPacket.getDestinationPort()))
+					selectorBuilder.matchTcpDst(TpPort.tpPort(tcpPacket.getDestinationPort()));
+
 			}
 			if (ipv4Protocol == IPv4.PROTOCOL_UDP) {
 				UDP udpPacket = (UDP) ipv4Packet.getPayload();
-				selectorBuilder.matchIPProtocol(ipv4Protocol).matchUdpSrc(TpPort.tpPort(udpPacket.getSourcePort()))
-						.matchUdpDst(TpPort.tpPort(udpPacket.getDestinationPort()));
+
+				// selectorBuilder.matchIPProtocol(ipv4Protocol).matchUdpSrc(TpPort.tpPort(udpPacket.getSourcePort()))
+				// .matchUdpDst(TpPort.tpPort(udpPacket.getDestinationPort()));
+				selectorBuilder.matchIPProtocol(ipv4Protocol);
+				if (isSpecificLayer4Port(udpPacket.getSourcePort()))
+					selectorBuilder.matchUdpSrc(TpPort.tpPort(udpPacket.getSourcePort()));
+				if (isSpecificLayer4Port(udpPacket.getDestinationPort()))
+					selectorBuilder.matchUdpDst(TpPort.tpPort(udpPacket.getDestinationPort()));
 			}
 			if (ipv4Protocol == IPv4.PROTOCOL_ICMP) {
 				ICMP icmpPacket = (ICMP) ipv4Packet.getPayload();
@@ -635,8 +673,9 @@ public class CaptivePortal {
 					dst_port = ((UdpPortCriterion) selector.getCriterion(Criterion.Type.UDP_DST)).udpPort().toString();
 				}
 
-				// auth.updateBytes(switchId.toString(), in_port, src_mac, dst_mac, src_ip, dst_ip, src_port, dst_port,
-				// 		protocol, bytes);
+				// auth.updateBytes(switchId.toString(), in_port, src_mac, dst_mac, src_ip,
+				// dst_ip, src_port, dst_port,
+				// protocol, bytes);
 				break;
 			default:
 				break;
