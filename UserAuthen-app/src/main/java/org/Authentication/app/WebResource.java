@@ -51,7 +51,7 @@ public class WebResource extends AbstractWebResource {
     @Path("/getUser")
     @Consumes("application/x-www-form-urlencoded")
     public boolean getUser(@FormParam("ip") String newIp) {
-        log.info(newIp);
+        // log.info(newIp);
         if (ipToMac.get(newIp) != null) {
 
             if (userMap.get(ipToMac.get(newIp)) != null)

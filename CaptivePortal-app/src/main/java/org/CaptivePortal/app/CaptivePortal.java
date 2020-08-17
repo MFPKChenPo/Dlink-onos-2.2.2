@@ -71,6 +71,7 @@ import org.onosproject.net.flow.instructions.Instructions;
 import org.onosproject.net.flowobjective.DefaultForwardingObjective;
 import org.onosproject.net.flowobjective.FlowObjectiveService;
 import org.onosproject.net.flowobjective.ForwardingObjective;
+import org.onosproject.net.flowobjective.ObjectiveContext;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.link.LinkEvent;
 import org.onosproject.net.packet.DefaultOutboundPacket;
@@ -412,6 +413,11 @@ public class CaptivePortal {
 					tcpPacket.serialize();
 					ipv4Packet.resetChecksum();
 					ipv4Packet.serialize();
+					log.info("packet from portal, oldSrcIP:{}, oldDstIP:{}, oldSrcPort:{},oldDstPort:{}",
+							Ip4Address.valueOf(ipv4Packet.getSourceAddress()).toString(),
+							Ip4Address.valueOf(ipv4Packet.getDestinationAddress()).toString(),
+							Integer.toString(tcpPacket.getSourcePort()),
+							Integer.toString(tcpPacket.getDestinationPort()));
 				}
 
 		OutboundPacket OutPkt = new DefaultOutboundPacket(in_sw, treatment, ByteBuffer.wrap(ethPkt.serialize()));
@@ -459,7 +465,10 @@ public class CaptivePortal {
 
 		ethPkt.setDestinationMACAddress(portalMac);
 		ipv4Packet.setDestinationAddress(portalIp);
-		tcpPacket.setDestinationPort(5001);
+		if (dst_port.toLong() == 80)
+			tcpPacket.setDestinationPort(5000);
+		else
+			tcpPacket.setDestinationPort(5001);
 		tcpPacket.resetChecksum();
 		tcpPacket.serialize();
 		ipv4Packet.resetChecksum();
@@ -487,7 +496,11 @@ public class CaptivePortal {
 		}
 
 		OutboundPacket OutPkt = new DefaultOutboundPacket(in_sw, treatment, ByteBuffer.wrap(ethPkt.serialize()));
-		log.info(treatment.toString());
+		// log.info(treatment.toString());
+		log.info("redirect ro portal, oldSrcIP:{}, oldDstIP:{}, oldSrcPort:{},oldDstPort:{}",
+				Ip4Address.valueOf(ipv4Packet.getSourceAddress()).toString(),
+				Ip4Address.valueOf(ipv4Packet.getDestinationAddress()).toString(),
+				Integer.toString(tcpPacket.getSourcePort()), Integer.toString(tcpPacket.getDestinationPort()));
 		packetService.emit(OutPkt);
 	}
 
@@ -561,7 +574,7 @@ public class CaptivePortal {
 	}
 
 	private boolean isMyLocalAreaNetwork(Ip4Prefix addr) {
-		if (addr.toString().equals("192.168.44.0/24") )
+		if (addr.toString().equals("192.168.44.0/24"))
 			return true;
 		log.info("is not my LAN address, the IP is: " + addr.toString());
 		return false;
@@ -576,6 +589,7 @@ public class CaptivePortal {
 			packetOut(context, portNumber);
 			return;
 		}
+
 		selectorBuilder.matchInPort(context.inPacket().receivedFrom().port());
 		// selectorBuilder.matchInPort(context.inPacket().receivedFrom().port()).matchEthSrc(inPkt.getSourceMAC())
 		// .matchEthDst(inPkt.getDestinationMAC());
@@ -589,10 +603,10 @@ public class CaptivePortal {
 			selectorBuilder.matchEthType(Ethernet.TYPE_IPV4);
 			if (isMyLocalAreaNetwork(Ip4Prefix.valueOf(ipv4Packet.getSourceAddress(), 24)))
 				selectorBuilder.matchIPSrc(matchIp4SrcPrefix);
-			if (isMyLocalAreaNetwork(Ip4Prefix.valueOf(ipv4Packet.getDestinationAddress(),24)))
+			if (isMyLocalAreaNetwork(Ip4Prefix.valueOf(ipv4Packet.getDestinationAddress(), 24)))
 				selectorBuilder.matchIPDst(matchIp4DstPrefix);
-				// selectorBuilder.matchEthType(Ethernet.TYPE_IPV4).matchIPSrc(matchIp4SrcPrefix)
-				// 		.matchIPDst(matchIp4DstPrefix);
+			// selectorBuilder.matchEthType(Ethernet.TYPE_IPV4).matchIPSrc(matchIp4SrcPrefix)
+			// .matchIPDst(matchIp4DstPrefix);
 
 			if (ipv4Protocol == IPv4.PROTOCOL_TCP) {
 				TCP tcpPacket = (TCP) ipv4Packet.getPayload();

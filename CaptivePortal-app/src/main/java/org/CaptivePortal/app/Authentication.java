@@ -130,7 +130,7 @@ public class Authentication {
 		} else if (src_mac.equalsIgnoreCase(portalMac)) {
 			// Packets from port 80/443/3000 of portal need some modification
 			// Pass packets from other ports of portal
-			if (src_port.equals("80") || src_port.equals("443") || src_port.equals("5001"))
+			if (src_port.equals("80") || src_port.equals("443") || src_port.equals("5001") || src_port.equals("5000"))
 				return "PktFromPortal";
 			else
 				return "Pass";
@@ -140,7 +140,7 @@ public class Authentication {
 		boolean src_enable = false;
 		Process process;
 		try {
-			log.info(src_ip);
+			// log.info(src_ip);
 			String line = "curl -X POST http://localhost:8181/RadiusAuthentication/UserCredential/getUser -u onos:rocks -d ip="
 			+ src_ip ;
 			// log.info(line);
@@ -159,12 +159,12 @@ public class Authentication {
 			if (line != null) {
 				if (line.equals("true"))
 				{
-					log.info("getUser success!!");
+					// log.info("getUser success!!");
 					src_enable = true;
 				}
 				else
 				{
-					log.info("getUser failed!!");
+					// log.info("getUser failed!!");
 					src_enable = false;
 				}
 			}
@@ -187,7 +187,7 @@ public class Authentication {
 			} else if (!src_mac.equalsIgnoreCase(portalMac) && !dst_mac.equalsIgnoreCase(portalMac)) {
 				// If the packet is from unauthenticated host and destination is not portal,
 				// redirect it to portal and update IP_MAC table
-				if (dst_port.equals("80") || dst_port.equals("443") || dst_port.equals("5001")) {
+				if (dst_port.equals("80") || dst_port.equals("443") || dst_port.equals("5001") || dst_port.equals("5000")) {
 					return "RedirectToPortal";
 				}
 			}
