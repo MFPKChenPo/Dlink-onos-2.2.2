@@ -6,8 +6,14 @@ Java: 11.0.8
 Ubuntu: 18.04
 ## Testing steps
 * Controller 
-    - Data plane IP: 192.168.44.128
-    - Control plane IP: 192.168.20.57
+    - Data plane IP: `192.168.44.128`
+    - Control plane IP: `192.168.20.57`
+1. Start RADIUS server in the container
+```bash=
+user$ docker run -it --rm --privileged winlab/freeradius
+(docker)$ freeradius -X
+```
+2. Start ONOS
 ```bash=
 cd ~/Dlink-onos-2.2.2/authentication && mci -DskipTests
 cd ~/Dlink-onos-2.2.2/captiveportal && mci -DskipTests
