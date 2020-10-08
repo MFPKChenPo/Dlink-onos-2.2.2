@@ -5,5 +5,5 @@ onos-app localhost install! ~/sadis/app/target/sadis-app-5.2.0-SNAPSHOT.oar
 sleep 3
 onos-app localhost install! ~/aaa/app/target/aaa-app-2.2.0-SNAPSHOT.oar
 sleep 3
-onos-app localhost install! ~/AAAfwd/target/aaafwd-1.0-SNAPSHOT.oar
+onos-app localhost install! ~/AAA/target/aaafwd-1.0-SNAPSHOT.oar
 
