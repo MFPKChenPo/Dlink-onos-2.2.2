@@ -301,6 +301,7 @@ public class CaptivePortal {
                 } else {
                     treatment = DefaultTrafficTreatment.builder().setOutput(path.src().port()).build();
                 }
+                // installRule(context, path.src().port());
             }
         }
 
@@ -376,7 +377,7 @@ public class CaptivePortal {
         ipv4Packet.setDestinationAddress(portalIp);
         if (destinationPort.toLong() == 80) {
             tcpPacket.setDestinationPort(5000);
-        } else {
+        } else if (destinationPort.toLong() == 443) {
             tcpPacket.setDestinationPort(5001);
         }
         tcpPacket.resetChecksum();
@@ -402,6 +403,7 @@ public class CaptivePortal {
                     } else {
                         treatment = DefaultTrafficTreatment.builder().setOutput(path.src().port()).build();
                     }
+                    // installRule(context, path.src().port());
                 }
             }
         }

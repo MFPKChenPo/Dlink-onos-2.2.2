@@ -107,11 +107,11 @@ public class CaptivePortalUserInfo {
     **/
     public String accessCheck() {
 
-        // Pass DHCP packets
+        // Ignore DHCP packets
         if (protocol == IPv4.PROTOCOL_UDP) {
             if ((sourcePort.equals("67") && destinationPort.equals("68")) ||
             (sourcePort.equals("68") && destinationPort.equals("67"))) {
-                return CAPTIVE_PORTAL_AUTHORIZED;
+                return CAPTIVE_PORTAL_DENIED;
             }
         }
         // Pass DNS packets

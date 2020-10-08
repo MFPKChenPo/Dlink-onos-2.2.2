@@ -13,7 +13,7 @@
                 "renew":"20",
                 "rebind":"30",
                 "delay":"2",
-                "timeout":"20",
+                "timeout":"220",
                 "startip":"192.168.44.165",
                 "endip":"192.168.44.180"
             }
